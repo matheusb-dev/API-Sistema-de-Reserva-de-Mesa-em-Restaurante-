@@ -9,7 +9,7 @@ import java.util.Optional;
 
 import com.example.demo.Entities.ItemDeCardapio;
 
-public interface ItemDeCardapioRepository extends JpaRepository< ItemDeCardapio, Long> {
+public interface ItemCardapioRepository extends JpaRepository< ItemDeCardapio, Long> {
     
     Optional<ItemDeCardapio> findByNome(String nome);
 

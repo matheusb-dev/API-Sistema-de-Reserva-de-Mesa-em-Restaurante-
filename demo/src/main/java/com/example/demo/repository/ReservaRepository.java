@@ -4,19 +4,21 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import com.example.demo.Entities.Reserva_Entidade;
 
-public interface ReservaRepository extends JpaRepository<Reserva_Entidade, Long> {
+import com.example.demo.Entities.Reserva;
 
-    List<Reserva_Entidade> findByStatus(String status);
 
-    List<Reserva_Entidade> findByStatusContainingIgnoreCase(String status);
+public interface ReservaRepository extends JpaRepository<Reserva, Long> {
 
-    List<Reserva_Entidade> findByClienteId(Long clienteId);
+    List<Reserva> findByStatus(String status);
 
-    List<Reserva_Entidade> findByMesaId(Long mesaId);
+    List<Reserva> findByStatusContainingIgnoreCase(String status);
 
-    List<Reserva_Entidade> findByDataReservaAfter(LocalDateTime data);
+    List<Reserva> findByClienteId(Long clienteId);
 
-    List<Reserva_Entidade> findByDataReservaBetween(LocalDateTime inicio, LocalDateTime fim);
+    List<Reserva> findByMesaId(Long mesaId);
+
+    List<Reserva> findByDataReservaAfter(LocalDateTime data);
+
+    List<Reserva> findByDataReservaBetween(LocalDateTime inicio, LocalDateTime fim);
 }

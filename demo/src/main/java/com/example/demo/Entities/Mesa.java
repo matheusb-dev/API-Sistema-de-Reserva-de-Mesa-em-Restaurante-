@@ -1,10 +1,7 @@
 package com.example.demo.Entities;
 
-
 import jakarta.persistence.*;
 import lombok.*;
-
-
 
 @Data
 @Entity
@@ -20,7 +17,7 @@ public class Mesa {
     @Column(nullable = false)
     private Integer numero;
 
-     @Column(nullable = false)
+    @Column(nullable = false)
     private Integer capacidade;
 
     @Column(nullable = false)

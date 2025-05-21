@@ -8,11 +8,11 @@ import org.springframework.stereotype.Repository;
 
 import com.example.demo.Entities.Mesa;
 
-
-
 @Repository
-public interface Imesarepository extends JpaRepository<Mesa, Long>{
-      Optional<Mesa> findByid(Long id);
-      List<Mesa> findBynum(Integer numero);
+public interface Imesarepository extends JpaRepository<Mesa, Long> {
+
+    Optional<Mesa> findById(Long id);
+
+    List<Mesa> findByNumero(Integer numero);
 
 }
