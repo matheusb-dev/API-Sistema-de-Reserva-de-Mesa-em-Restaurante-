@@ -11,27 +11,19 @@ import java.time.LocalDate;
 
 @Data
 @NoArgsConstructor
-public class UsuarioDTO {
+public class ClienteDTO {
     
     private Long id;
 
     @NotBlank(message = "O nome é obrigatório")
+    @Size(min = 2, max = 100, message = "O nome deve ter entre 2 e 100 caracteres")
     private String nome;
-
-    @NotBlank(message = "O CPF é obrigatório")
-    @Size(min = 11, max = 11, message = "O CPF deve ter 11 caracteres")
-    private String cpf;
 
     @Email(message = "E-mail inválido")
     @NotBlank(message = "O e-mail é obrigatório")
     private String email;
 
-    @NotBlank(message = "A senha é obrigatória")
-    @Size(min = 6, message = "A senha deve ter pelo menos 6 caracteres")
-    private String senha;
-
-    private LocalDate dataNascimento;
-
     @NotBlank(message = "O telefone é obrigatório")
+    @Size(min = 10, max = 15, message = "O telefone deve ter entre 10 e 15 dígitos")
     private String telefone;
 }
