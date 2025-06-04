@@ -21,4 +21,5 @@ public interface ReservaRepository extends JpaRepository<Reserva, Long> {
     List<Reserva> findByDataReservaAfter(LocalDateTime data);
 
     List<Reserva> findByDataReservaBetween(LocalDateTime inicio, LocalDateTime fim);
+    
 }
