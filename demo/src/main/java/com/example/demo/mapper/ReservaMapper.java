@@ -29,5 +29,6 @@ public interface ReservaMapper {
     @Mapping(target = "horaReserva", ignore = true)
     Reserva toEntity(ReservaDTO reservaDTO);
 
+    
     List<ReservaDTO> toDTOList(List<Reserva> reservas);
 }
