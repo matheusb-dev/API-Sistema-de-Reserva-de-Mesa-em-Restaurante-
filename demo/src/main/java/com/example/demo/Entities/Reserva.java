@@ -6,6 +6,7 @@ import lombok.*;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 
+
 @Data
 @Entity
 @Table(name = "reserva")
