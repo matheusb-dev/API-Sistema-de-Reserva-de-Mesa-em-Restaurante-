@@ -50,6 +50,7 @@ public class ReservaController {
         return ResponseEntity.ok(reservas);
     }
 
+    
     @Operation(summary = "Busca uma reserva por ID", description = "Retorna os detalhes de uma reserva específica")
     @GetMapping("/{id}")
     public ResponseEntity<ReservaDTO> buscarPorId(@PathVariable Long id) {
