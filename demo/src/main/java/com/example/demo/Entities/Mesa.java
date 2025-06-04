@@ -14,13 +14,13 @@ public class Mesa {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private Integer numero;
 
     @Column(nullable = false)
     private Integer capacidade;
 
     @Column(nullable = false)
-    private String status;
+    private String status = "Livre"; // Default: Livre, Ocupada, Reservada
 
 }
