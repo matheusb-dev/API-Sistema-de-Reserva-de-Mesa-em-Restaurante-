@@ -16,11 +16,15 @@ public class Pedido {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "reservas", nullable = false)
-    private Long reservaId;
+    // Relacionamento com Reserva
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "reserva_id", nullable = false)
+    private Reserva reserva;
 
-    @Column(name = "item_de_cardapio", nullable = false)
-    private Long itemId;
+    // Relacionamento com ItemDeCardapio
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "item_id", nullable = false)
+    private ItemDeCardapio item;
 
     @Column(nullable = false)
     private Integer quantidade;
