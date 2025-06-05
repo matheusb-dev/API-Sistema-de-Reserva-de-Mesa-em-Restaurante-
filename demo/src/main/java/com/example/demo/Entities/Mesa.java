@@ -5,22 +5,18 @@ import lombok.*;
 
 @Data
 @Entity
-@Table(name = "Mesa")
+@Table(name = "mesas")
 @NoArgsConstructor
 @AllArgsConstructor
 public class Mesa {
-
+    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @Column(nullable = false, unique = true)
-    private Integer numero;
-
+    
     @Column(nullable = false)
-    private Integer capacidade;
-
+    private Integer quantidade;
+    
     @Column(nullable = false)
-    private String status = "Livre"; // Default: Livre, Ocupada, Reservada
-
+    private String status = "livre";  // Default value will be "livre"
 }

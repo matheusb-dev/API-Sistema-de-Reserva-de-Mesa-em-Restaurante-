@@ -1,19 +1,21 @@
 package com.example.demo.mapper;
 
-import java.util.List;
-
-import org.mapstruct.Mapper;
-
-import com.example.demo.Entities.Cliente;
 import com.example.demo.dto.ClienteDTO;
+import com.example.demo.Entities.Cliente;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
+import org.mapstruct.factory.Mappers;
 
 @Mapper(componentModel = "spring")
 public interface ClienteMapper {
-    
+
+    ClienteMapper INSTANCE = Mappers.getMapper(ClienteMapper.class);
 
     ClienteDTO toDTO(Cliente cliente);
 
     Cliente toEntity(ClienteDTO clienteDTO);
 
-    List<ClienteDTO> toDTOList(List<Cliente> clientes);
+    @Mapping(target = "id", ignore = true)
+    void updateEntityFromDTO(ClienteDTO clienteDTO, @MappingTarget Cliente cliente);
 }

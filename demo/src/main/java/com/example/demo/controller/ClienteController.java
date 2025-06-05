@@ -1,90 +1,59 @@
 package com.example.demo.controller;
 
-import java.util.List;
-import java.util.Optional;
-
+import com.example.demo.dto.ClienteDTO;
+import com.example.demo.service.ClienteService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.example.demo.dto.ClienteDTO;
-import com.example.demo.service.ClienteService;
-import com.example.demo.service.Utils.ApiResponse;
-import com.example.demo.service.Utils.ErrorResponse;
+import java.util.List;
 
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
-
-@Tag(name = "Clientes", description = "Endpoints para gerenciamento de clientes")
 @RestController
-@RequestMapping("api/clientes")
+@RequestMapping("/api/clientes")
+@Tag(name = "Cliente Controller", description = "Endpoints para gerenciamento de clientes")
+@CrossOrigin(origins = "*")
 public class ClienteController {
 
     @Autowired
     private ClienteService clienteService;
 
-    @Operation(summary = "Lista todos os clientes", description = "Retorna uma lista com todos os clientes cadastrados")
-    @GetMapping
-    public ResponseEntity<List<ClienteDTO>> listarClientes() {
-        List<ClienteDTO> clientes = clienteService.listarTodos();
-        return ResponseEntity.ok(clientes);
-    }
-
-    @Operation(summary = "Busca um cliente por ID", description = "Retorna os detalhes de um cliente específico")
-    @GetMapping("/{id}")
-    public ResponseEntity<ClienteDTO> buscarPorId(@PathVariable Long id) {
-        Optional<ClienteDTO> cliente = clienteService.buscarPorId(id);
-        return cliente.map(ResponseEntity::ok)
-                      .orElseGet(() -> ResponseEntity.notFound().build());
-    }
-
-    @Operation(summary = "Cria um novo cliente", description = "Cadastra um novo cliente no sistema")
+    @Operation(summary = "Criar um novo cliente", description = "Cria um novo cliente com os dados fornecidos")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Cliente criado com sucesso"),
+        @ApiResponse(responseCode = "400", description = "Dados inválidos")
+    })
     @PostMapping
-    public ResponseEntity<ApiResponse<ClienteDTO>> criarCliente(@Valid @RequestBody ClienteDTO clienteDTO) {
-        try {
-            ClienteDTO savedCliente = clienteService.salvar(clienteDTO);
-            ApiResponse<ClienteDTO> response = new ApiResponse<>(savedCliente);
-            return ResponseEntity.status(HttpStatus.CREATED).body(response);
-        } catch (IllegalArgumentException e) {
-            ErrorResponse errorResponse = new ErrorResponse("Argumento inválido", e.getMessage());
-            ApiResponse<ClienteDTO> response = new ApiResponse<>(errorResponse);
-            return ResponseEntity.badRequest().body(response);
-        } catch (Exception e) {
-            ErrorResponse errorResponse = new ErrorResponse("Erro interno", e.getMessage());
-            ApiResponse<ClienteDTO> response = new ApiResponse<>(errorResponse);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-        }
+    public ResponseEntity<ClienteDTO> createCliente(@RequestBody ClienteDTO clienteDTO) {
+        return ResponseEntity.ok(clienteService.save(clienteDTO));
     }
 
-    @Operation(summary = "Atualiza um cliente", description = "Atualiza os dados de um cliente")
+    @Operation(summary = "Listar todos os clientes", description = "Retorna uma lista de todos os clientes")
+    @GetMapping
+    public ResponseEntity<List<ClienteDTO>> getAllClientes() {
+        return ResponseEntity.ok(clienteService.findAll());
+    }
+
+    @Operation(summary = "Buscar cliente por ID", description = "Retorna um cliente específico pelo ID")
+    @GetMapping("/{id}")
+    public ResponseEntity<ClienteDTO> getClienteById(@PathVariable Long id) {
+        return ResponseEntity.ok(clienteService.findById(id));
+    }
+
+    @Operation(summary = "Atualizar cliente", description = "Atualiza os dados de um cliente existente")
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<ClienteDTO>> atualizarCliente(@PathVariable Long id, @Valid @RequestBody ClienteDTO clienteDTO) {
-        try {
-            clienteDTO.setId(id);
-            ClienteDTO updatedCliente = clienteService.salvar(clienteDTO);
-            ApiResponse<ClienteDTO> response = new ApiResponse<>(updatedCliente);
-            return ResponseEntity.ok(response);
-        } catch (IllegalArgumentException e) {
-            ErrorResponse errorResponse = new ErrorResponse("Argumento inválido", e.getMessage());
-            ApiResponse<ClienteDTO> response = new ApiResponse<>(errorResponse);
-            return ResponseEntity.badRequest().body(response);
-        } catch (Exception e) {
-            ErrorResponse errorResponse = new ErrorResponse("Erro interno", e.getMessage());
-            ApiResponse<ClienteDTO> response = new ApiResponse<>(errorResponse);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-        }
+    public ResponseEntity<ClienteDTO> updateCliente(@PathVariable Long id, @RequestBody ClienteDTO clienteDTO) {
+        clienteDTO.setId(id);
+        return ResponseEntity.ok(clienteService.update(clienteDTO));
     }
 
-    @Operation(summary = "Remove um cliente", description = "Remove um cliente do sistema, caso não tenha reservas associadas")
+    @Operation(summary = "Deletar cliente", description = "Remove um cliente pelo ID")
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletarCliente(@PathVariable Long id) {
-        try {
-            clienteService.deletar(id);
-            return ResponseEntity.noContent().build();
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.notFound().build();
-        }
+    public ResponseEntity<Void> deleteCliente(@PathVariable Long id) {
+        clienteService.delete(id);
+        return ResponseEntity.noContent().build();
     }
 }

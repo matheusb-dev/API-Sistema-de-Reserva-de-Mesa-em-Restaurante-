@@ -1,30 +1,28 @@
 package com.example.demo.dto;
 
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
+@AllArgsConstructor
+@Schema(description = "DTO for Cliente operations")
 public class ClienteDTO {
     
+    @Schema(description = "ID do cliente", example = "1")
     private Long id;
-
-    @NotBlank(message = "O nome é obrigatório")
-    @Size(min = 2, max = 100, message = "O nome deve ter entre 2 e 100 caracteres")
-    @Pattern(regexp = "^[A-Za-zÀ-ÿ\\s]+$", message = "O nome deve conter apenas letras e espaços")
+    
+    @Schema(description = "Nome do cliente", example = "João Silva")
     private String nome;
-
-    @Email(message = "E-mail inválido")
-    @NotBlank(message = "O e-mail é obrigatório")
-    @Size(max = 150, message = "O e-mail deve ter no máximo 150 caracteres")
+    
+    @Schema(description = "Email do cliente", example = "joao@email.com")
     private String email;
-
-    @NotBlank(message = "O telefone é obrigatório")
-    @Pattern(regexp = "^\\(?\\d{2}\\)?[\\s-]?\\d{4,5}[\\s-]?\\d{4}$", 
-             message = "Telefone deve estar no formato: 11 99999-9999 ou 11999999999")
+    
+    @Schema(description = "Telefone do cliente", example = "(11) 98765-4321")
     private String telefone;
+    
+    @Schema(description = "CPF do cliente", example = "123.456.789-00")
+    private String cpf;
 }

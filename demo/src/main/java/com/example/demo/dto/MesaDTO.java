@@ -1,29 +1,22 @@
 package com.example.demo.dto;
 
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
+@AllArgsConstructor
+@Schema(description = "DTO for Mesa operations")
 public class MesaDTO {
     
+    @Schema(description = "ID da mesa", example = "1")
     private Long id;
-
-    @NotNull(message = "O número da mesa é obrigatório")
-    @Min(value = 1, message = "O número da mesa deve ser maior que zero")
-    @Max(value = 999, message = "O número da mesa não pode ser superior a 999")
-    private Integer numero;
-
-    @NotNull(message = "A capacidade é obrigatória")
-    @Min(value = 1, message = "A capacidade deve ser pelo menos 1")
-    @Max(value = 50, message = "A capacidade máxima é de 50 pessoas")
-    private Integer capacidade;
-
-    @Pattern(regexp = "^(Livre|Ocupada|Reservada)$", 
-             message = "Status deve ser: Livre, Ocupada ou Reservada")
-    private String status = "Livre"; // Valor padrão
+    
+    @Schema(description = "Quantidade de lugares na mesa", example = "4")
+    private Integer quantidade;
+    
+    @Schema(description = "Status da mesa", example = "livre")
+    private String status;
 }

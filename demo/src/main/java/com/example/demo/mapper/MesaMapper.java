@@ -1,18 +1,24 @@
 package com.example.demo.mapper;
 
-import java.util.List;
-
-import org.mapstruct.Mapper;
-
-import com.example.demo.Entities.Mesa;
 import com.example.demo.dto.MesaDTO;
+import com.example.demo.Entities.Mesa;
+import org.springframework.stereotype.Component;
 
-@Mapper(componentModel = "spring")
-public interface MesaMapper {
+@Component
+public class MesaMapper {
     
-    MesaDTO toDTO(Mesa mesa);
-
-    Mesa toEntity(MesaDTO mesaDTO);
-
-    List<MesaDTO> toDTOList(List<Mesa> mesas);
+    public Mesa toEntity(MesaDTO dto) {
+        Mesa mesa = new Mesa();
+        mesa.setQuantidade(dto.getQuantidade());
+        mesa.setStatus("livre"); // Default status
+        return mesa;
+    }
+    
+    public MesaDTO toDTO(Mesa mesa) {
+        return new MesaDTO(
+            mesa.getId(),
+            mesa.getQuantidade(),
+            mesa.getStatus()
+        );
+    }
 }

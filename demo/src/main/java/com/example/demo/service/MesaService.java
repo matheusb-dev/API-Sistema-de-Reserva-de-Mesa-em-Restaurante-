@@ -1,14 +1,13 @@
 package com.example.demo.service;
 
-import com.example.demo.Entities.Mesa;
 import com.example.demo.dto.MesaDTO;
-import com.example.demo.mapper.MesaMapper;
+import com.example.demo.Entities.Mesa;
 import com.example.demo.repository.MesaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class MesaService {
@@ -16,56 +15,51 @@ public class MesaService {
     @Autowired
     private MesaRepository mesaRepository;
 
-    @Autowired
-    private MesaMapper mesaMapper;
-
-    public List<MesaDTO> listarTodas() {
-        return mesaMapper.toDTOList(mesaRepository.findAll());
+    public MesaDTO save(MesaDTO mesaDTO) {
+        Mesa mesa = toEntity(mesaDTO);
+        mesa.setStatus("livre"); // Always set status to "livre" for new mesas
+        return toDTO(mesaRepository.save(mesa));
     }
 
-    public List<MesaDTO> listarDisponiveis() {
-        return mesaMapper.toDTOList(mesaRepository.findByStatus("Livre"));
+    public List<MesaDTO> findAll() {
+        return mesaRepository.findAll().stream()
+                .map(this::toDTO)
+                .collect(Collectors.toList());
     }
 
-    public Optional<MesaDTO> buscarPorId(Long id) {
-        return mesaRepository.findById(id).map(mesaMapper::toDTO);
+    public MesaDTO findById(Long id) {
+        return mesaRepository.findById(id)
+                .map(this::toDTO)
+                .orElseThrow(() -> new RuntimeException("Mesa não encontrada"));
     }
 
-    public MesaDTO salvar(MesaDTO mesaDTO) {
-        // Verificar se já existe mesa com o mesmo número
-        if (mesaDTO.getId() == null && mesaRepository.existsByNumero(mesaDTO.getNumero())) {
-            throw new IllegalArgumentException("Já existe uma mesa com o número " + mesaDTO.getNumero());
-        }
-
-        // Definir status padrão se não fornecido
-        if (mesaDTO.getStatus() == null || mesaDTO.getStatus().isEmpty()) {
-            mesaDTO.setStatus("Livre");
-        }
-
-        Mesa mesa = mesaMapper.toEntity(mesaDTO);
-        return mesaMapper.toDTO(mesaRepository.save(mesa));
+    public MesaDTO update(MesaDTO mesaDTO) {
+        // Verify if mesa exists
+        findById(mesaDTO.getId());
+        Mesa mesa = toEntity(mesaDTO);
+        return toDTO(mesaRepository.save(mesa));
     }
 
-    public MesaDTO atualizarStatus(Long id, String novoStatus) {
+    public void delete(Long id) {
         Mesa mesa = mesaRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Mesa não encontrada"));
-        
-        if (!novoStatus.matches("^(Livre|Ocupada|Reservada)$")) {
-            throw new IllegalArgumentException("Status inválido. Use: Livre, Ocupada ou Reservada");
-        }
-
-        mesa.setStatus(novoStatus);
-        return mesaMapper.toDTO(mesaRepository.save(mesa));
+                .orElseThrow(() -> new RuntimeException("Mesa não encontrada"));
+        mesaRepository.delete(mesa);
     }
 
-    public void deletar(Long id) {
-        if (!mesaRepository.existsById(id)) {
-            throw new IllegalArgumentException("Mesa não encontrada");
-        }
-        mesaRepository.deleteById(id);
+    // Helper methods for converting between DTO and Entity
+    private Mesa toEntity(MesaDTO dto) {
+        Mesa mesa = new Mesa();
+        mesa.setId(dto.getId());
+        mesa.setQuantidade(dto.getQuantidade());
+        mesa.setStatus(dto.getStatus() != null ? dto.getStatus() : "livre");
+        return mesa;
     }
 
-    public List<MesaDTO> buscarPorCapacidade(Integer capacidadeMinima) {
-        return mesaMapper.toDTOList(mesaRepository.findByCapacidadeGreaterThanEqual(capacidadeMinima));
+    private MesaDTO toDTO(Mesa mesa) {
+        return new MesaDTO(
+            mesa.getId(),
+            mesa.getQuantidade(),
+            mesa.getStatus()
+        );
     }
 }
