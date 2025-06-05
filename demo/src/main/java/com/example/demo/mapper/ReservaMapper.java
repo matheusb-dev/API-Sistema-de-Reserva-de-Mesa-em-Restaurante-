@@ -1,34 +1,21 @@
 package com.example.demo.mapper;
 
-import java.util.List;
-
+import com.example.demo.dto.ReservaDTO;
+import com.example.demo.Entities.Reserva;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-
-import com.example.demo.Entities.Reserva;
-import com.example.demo.dto.ReservaDTO;
+import org.mapstruct.factory.Mappers;
 
 @Mapper(componentModel = "spring")
 public interface ReservaMapper {
-    
-    @Mapping(target = "clienteId", source = "cliente.id")
-    @Mapping(target = "mesaId", source = "mesa.id")
-    @Mapping(target = "nomeCliente", source = "cliente.nome")
-    @Mapping(target = "numeroMesa", source = "mesa.numero")
-    @Mapping(target = "capacidadeMesa", source = "mesa.capacidade")
+
+    ReservaMapper INSTANCE = Mappers.getMapper(ReservaMapper.class);
+
+    @Mapping(source = "mesa.id", target = "mesaId")
+    @Mapping(source = "cliente.id", target = "clienteId")
     ReservaDTO toDTO(Reserva reserva);
 
-    @Mapping(target = "cliente.id", source = "clienteId")
-    @Mapping(target = "mesa.id", source = "mesaId")
-    @Mapping(target = "cliente.nome", ignore = true)
-    @Mapping(target = "cliente.email", ignore = true)
-    @Mapping(target = "cliente.telefone", ignore = true)
-    @Mapping(target = "mesa.numero", ignore = true)
-    @Mapping(target = "mesa.capacidade", ignore = true)
-    @Mapping(target = "mesa.status", ignore = true)
-    @Mapping(target = "horaReserva", ignore = true)
+    @Mapping(source = "mesaId", target = "mesa.id")
+    @Mapping(source = "clienteId", target = "cliente.id")
     Reserva toEntity(ReservaDTO reservaDTO);
-
-    
-    List<ReservaDTO> toDTOList(List<Reserva> reservas);
 }

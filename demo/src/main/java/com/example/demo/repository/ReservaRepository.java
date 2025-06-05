@@ -1,25 +1,27 @@
 package com.example.demo.repository;
 
+import com.example.demo.Entities.Reserva;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
+
 import java.time.LocalDateTime;
 import java.util.List;
 
-import org.springframework.data.jpa.repository.JpaRepository;
-
-import com.example.demo.Entities.Reserva;
-
-
+@Repository
 public interface ReservaRepository extends JpaRepository<Reserva, Long> {
-
-    List<Reserva> findByStatus(String status);
-
-    List<Reserva> findByStatusContainingIgnoreCase(String status);
-
-    List<Reserva> findByClienteId(Long clienteId);
-
-    List<Reserva> findByMesaId(Long mesaId);
-
-    List<Reserva> findByDataReservaAfter(LocalDateTime data);
-
-    List<Reserva> findByDataReservaBetween(LocalDateTime inicio, LocalDateTime fim);
     
+    @Query("SELECT r FROM Reserva r WHERE r.mesa.id = :mesaId AND r.horario = :horario")
+    List<Reserva> findReservasByMesaAndHorario(
+        @Param("mesaId") Long mesaId, 
+        @Param("horario") LocalDateTime horario
+    );
+
+    // Opcional: Método para buscar todas as reservas de uma mesa em um determinado dia
+    @Query("SELECT r FROM Reserva r WHERE r.mesa.id = :mesaId AND DATE(r.horario) = DATE(:data)")
+    List<Reserva> findReservasByMesaAndData(
+        @Param("mesaId") Long mesaId, 
+        @Param("data") LocalDateTime data
+    );
 }
