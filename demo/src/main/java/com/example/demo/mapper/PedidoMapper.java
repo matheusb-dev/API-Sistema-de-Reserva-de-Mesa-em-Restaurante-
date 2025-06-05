@@ -1,35 +1,47 @@
 package com.example.demo.mapper;
 
-import java.util.List;
-
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-
-import com.example.demo.Entities.Pedido;
 import com.example.demo.dto.PedidoDTO;
+import com.example.demo.Entities.Pedido;
+import com.example.demo.Entities.Produto;
+import org.springframework.stereotype.Component;
 
-@Mapper(componentModel = "spring")
-public interface PedidoMapper {
-    
-    @Mapping(target = "reservaId", source = "reserva.id")
-    @Mapping(target = "itemId", source = "item.id")
-    @Mapping(target = "nomeItem", source = "item.nome")
-    @Mapping(target = "precoUnitario", source = "item.preco")
-    @Mapping(target = "clienteId", source = "reserva.cliente.id")
-    @Mapping(target = "nomeCliente", source = "reserva.cliente.nome")
-    PedidoDTO toDTO(Pedido pedido);
+import java.util.stream.Collectors;
 
-    @Mapping(target = "reserva.id", source = "reservaId")
-    @Mapping(target = "item.id", source = "itemId")
-    @Mapping(target = "reserva.cliente", ignore = true)
-    @Mapping(target = "reserva.mesa", ignore = true)
-    @Mapping(target = "reserva.dataReserva", ignore = true)
-    @Mapping(target = "reserva.horaReserva", ignore = true)
-    @Mapping(target = "reserva.status", ignore = true)
-    @Mapping(target = "item.nome", ignore = true)
-    @Mapping(target = "item.descricao", ignore = true)
-    @Mapping(target = "item.preco", ignore = true)
-    Pedido toEntity(PedidoDTO pedidoDTO);
+@Component
+public class PedidoMapper {
 
-    List<PedidoDTO> toDTOList(List<Pedido> pedidos);
+    public PedidoDTO toDTO(Pedido pedido) {
+        if (pedido == null) {
+            return null;
+        }
+
+        PedidoDTO dto = new PedidoDTO();
+        dto.setId(pedido.getId());
+        dto.setClienteId(pedido.getCliente() != null ? pedido.getCliente().getId() : null);
+        dto.setMesaId(pedido.getMesa() != null ? pedido.getMesa().getId() : null);
+        dto.setValorTotal(pedido.getValorTotal());
+        dto.setDataPedido(pedido.getDataPedido());
+        
+        if (pedido.getProdutos() != null) {
+            dto.setProdutosIds(
+                pedido.getProdutos().stream()
+                    .map(Produto::getId)
+                    .collect(Collectors.toList())
+            );
+        }
+        
+        return dto;
+    }
+
+    public Pedido toEntity(PedidoDTO dto) {
+        if (dto == null) {
+            return null;
+        }
+
+        return Pedido.builder()
+                .id(dto.getId())
+                .valorTotal(dto.getValorTotal())
+                .dataPedido(dto.getDataPedido())
+                .build();
+    }
 }

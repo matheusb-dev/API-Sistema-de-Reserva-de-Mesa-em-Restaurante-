@@ -1,19 +1,19 @@
 package com.example.demo.service;
 
-import com.example.demo.Entities.ItemDeCardapio;
-import com.example.demo.Entities.Pedido;
-import com.example.demo.Entities.Reserva;
 import com.example.demo.dto.PedidoDTO;
+import com.example.demo.Entities.Cliente;
+import com.example.demo.Entities.Mesa;
+import com.example.demo.Entities.Pedido;
+import com.example.demo.Entities.Produto;
 import com.example.demo.mapper.PedidoMapper;
-import com.example.demo.repository.ItemCardapioRepository;
-import com.example.demo.repository.PedidoRepository;
-import com.example.demo.repository.ReservaRepository;
+import com.example.demo.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class PedidoService {
@@ -22,108 +22,85 @@ public class PedidoService {
     private PedidoRepository pedidoRepository;
 
     @Autowired
-    private ReservaRepository reservaRepository;
+    private ClienteRepository clienteRepository;
 
     @Autowired
-    private ItemCardapioRepository itemRepository;
+    private MesaRepository mesaRepository;
+
+    @Autowired
+    private ProdutoRepository produtoRepository;
 
     @Autowired
     private PedidoMapper pedidoMapper;
 
-    public List<PedidoDTO> listarTodos() {
-        return pedidoMapper.toDTOList(pedidoRepository.findAll());
+    public List<PedidoDTO> findAll() {
+        return pedidoRepository.findAll().stream()
+                .map(pedidoMapper::toDTO)
+                .collect(Collectors.toList());
     }
 
-    public Optional<PedidoDTO> buscarPorId(Long id) {
-        return pedidoRepository.findById(id).map(pedidoMapper::toDTO);
+    public PedidoDTO findById(Long id) {
+        return pedidoRepository.findById(id)
+                .map(pedidoMapper::toDTO)
+                .orElseThrow(() -> new RuntimeException("Pedido não encontrado"));
     }
 
-    public List<PedidoDTO> buscarPorReserva(Long reservaId) {
-        return pedidoMapper.toDTOList(pedidoRepository.findByReservaId(reservaId));
-    }
+    @Transactional
+    public PedidoDTO save(PedidoDTO pedidoDTO) {
+        // Validar cliente
+        Cliente cliente = clienteRepository.findById(pedidoDTO.getClienteId())
+                .orElseThrow(() -> new RuntimeException("Cliente não encontrado"));
 
-    public List<PedidoDTO> buscarPorCliente(Long clienteId) {
-        return pedidoMapper.toDTOList(pedidoRepository.findByClienteId(clienteId));
-    }
+        // Validar mesa
+        Mesa mesa = mesaRepository.findById(pedidoDTO.getMesaId())
+                .orElseThrow(() -> new RuntimeException("Mesa não encontrada"));
 
-    public PedidoDTO criarPedido(PedidoDTO pedidoDTO) {
-        // Verificar se reserva existe e está ativa
-        Reserva reserva = reservaRepository.findById(pedidoDTO.getReservaId())
-                .orElseThrow(() -> new IllegalArgumentException("Reserva não encontrada"));
+        // Validar produtos e calcular valor total
+        List<Produto> produtos = pedidoDTO.getProdutosIds().stream()
+                .map(produtoId -> produtoRepository.findById(produtoId)
+                        .orElseThrow(() -> new RuntimeException("Produto não encontrado: " + produtoId)))
+                .collect(Collectors.toList());
 
-        if (!"Confirmada".equals(reserva.getStatus())) {
-            throw new IllegalArgumentException("Só é possível fazer pedidos para reservas confirmadas");
-        }
+        Double valorTotal = produtos.stream()
+                .mapToDouble(Produto::getPreco)
+                .sum();
 
-        // Verificar se item existe
-        ItemDeCardapio item = itemRepository.findById(pedidoDTO.getItemId())
-                .orElseThrow(() -> new IllegalArgumentException("Item não encontrado"));
-
-        // Validar quantidade
-        if (pedidoDTO.getQuantidade() == null || pedidoDTO.getQuantidade() <= 0) {
-            throw new IllegalArgumentException("Quantidade deve ser maior que zero");
-        }
-
-        if (pedidoDTO.getQuantidade() > 100) {
-            throw new IllegalArgumentException("Quantidade não pode ser superior a 100 unidades por pedido");
-        }
-
-        // SEMPRE calcular o valor total - cliente NÃO pode informar
-        BigDecimal valorTotal = item.getPreco().multiply(BigDecimal.valueOf(pedidoDTO.getQuantidade()));
-        pedidoDTO.setValorTotal(valorTotal);
-
-        // Verificar se o valor total não é absurdo (proteção adicional)
-        if (valorTotal.compareTo(new BigDecimal("99999.99")) > 0) {
-            throw new IllegalArgumentException("Valor total do pedido excede o limite permitido");
-        }
-
+        // Criar pedido
         Pedido pedido = pedidoMapper.toEntity(pedidoDTO);
-        pedido.setReserva(reserva);
-        pedido.setItem(item);
+        pedido.setCliente(cliente);
+        pedido.setMesa(mesa);
+        pedido.setProdutos(produtos);
+        pedido.setValorTotal(valorTotal);
+        pedido.setDataPedido(LocalDateTime.now());
 
         return pedidoMapper.toDTO(pedidoRepository.save(pedido));
     }
 
-    public void deletar(Long id) {
+    @Transactional
+    public void delete(Long id) {
         Pedido pedido = pedidoRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Pedido não encontrado"));
-
-        // Só permite deletar se a reserva ainda estiver ativa
-        if (!"Confirmada".equals(pedido.getReserva().getStatus())) {
-            throw new IllegalArgumentException("Só é possível cancelar pedidos de reservas confirmadas");
-        }
-
-        pedidoRepository.deleteById(id);
+                .orElseThrow(() -> new RuntimeException("Pedido não encontrado"));
+        pedidoRepository.delete(pedido);
     }
 
-    public BigDecimal calcularTotalPorReserva(Long reservaId) {
-        // Verificar se reserva existe
-        if (!reservaRepository.existsById(reservaId)) {
-            throw new IllegalArgumentException("Reserva não encontrada");
-        }
-
-        List<Pedido> pedidos = pedidoRepository.findByReservaId(reservaId);
-        return pedidos.stream()
-                .map(Pedido::getValorTotal)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-    }
-
-    public PedidoDTO atualizarQuantidade(Long pedidoId, Integer novaQuantidade) {
-        if (novaQuantidade <= 0 || novaQuantidade > 100) {
-            throw new IllegalArgumentException("Quantidade deve estar entre 1 e 100");
-        }
-
+    @Transactional
+    public PedidoDTO adicionarProdutos(Long pedidoId, List<Long> novoProdutosIds) {
         Pedido pedido = pedidoRepository.findById(pedidoId)
-                .orElseThrow(() -> new IllegalArgumentException("Pedido não encontrado"));
+                .orElseThrow(() -> new RuntimeException("Pedido não encontrado"));
 
-        if (!"Confirmada".equals(pedido.getReserva().getStatus())) {
-            throw new IllegalArgumentException("Só é possível alterar pedidos de reservas confirmadas");
-        }
+        List<Produto> novosProdutos = novoProdutosIds.stream()
+                .map(produtoId -> produtoRepository.findById(produtoId)
+                        .orElseThrow(() -> new RuntimeException("Produto não encontrado: " + produtoId)))
+                .collect(Collectors.toList());
 
-        pedido.setQuantidade(novaQuantidade);
+        pedido.getProdutos().addAll(novosProdutos);
+        
         // Recalcular valor total
-        BigDecimal novoValorTotal = pedido.getItem().getPreco().multiply(BigDecimal.valueOf(novaQuantidade));
-        pedido.setValorTotal(novoValorTotal);
+        Double valorTotal = pedido.getProdutos().stream()
+                .mapToDouble(Produto::getPreco)
+                .sum();
+        
+        pedido.setValorTotal(valorTotal);
 
         return pedidoMapper.toDTO(pedidoRepository.save(pedido));
     }

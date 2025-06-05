@@ -2,34 +2,42 @@ package com.example.demo.Entities;
 
 import jakarta.persistence.*;
 import lombok.*;
-
-import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @Entity
-@Table(name = "pedido")
+@Builder
+@Table(name = "pedidos")
 @NoArgsConstructor
 @AllArgsConstructor
 public class Pedido {
-
+    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    // Relacionamento com Reserva
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "reserva_id", nullable = false)
-    private Reserva reserva;
-
-    // Relacionamento com ItemDeCardapio
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "item_id", nullable = false)
-    private ItemDeCardapio item;
-
+    
+    @ManyToOne
+    @JoinColumn(name = "cliente_id", nullable = false)
+    private Cliente cliente;
+    
+    @ManyToOne
+    @JoinColumn(name = "mesa_id", nullable = false)
+    private Mesa mesa;
+    
+    @ManyToMany
+    @JoinTable(
+        name = "pedido_produtos",
+        joinColumns = @JoinColumn(name = "pedido_id"),
+        inverseJoinColumns = @JoinColumn(name = "produto_id")
+    )
+    @Builder.Default
+    private List<Produto> produtos = new ArrayList<>();
+    
     @Column(nullable = false)
-    private Integer quantidade;
-
-    @Column(name = "valor_total", nullable = false)
-    private BigDecimal valorTotal;
-
+    private Double valorTotal;
+    
+    @Column(nullable = false)
+    private LocalDateTime dataPedido;
 }
